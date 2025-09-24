@@ -1,0 +1,16 @@
+services:
+  mysql:
+    container_name: alurafake
+    image: mysql:latest
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=alurafake
+    security_opt:
+      - seccomp:unconfined
+    ports:
+      - 3306:3306
+    networks:
+      - alurafake
+
+networks:
+  alurafake:
