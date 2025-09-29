@@ -36,6 +36,14 @@ public class TaskService {
         return saveTask(newTaskDTO, Type.SINGLE_CHOICE);
     }
 
+    @Transactional
+    public Task createMultipleChoiceTask(NewTaskDTO newTaskDTO) {
+        validateBaseTask(newTaskDTO);
+        validateMultipleChoiceOptions(newTaskDTO);
+
+        return saveTask(newTaskDTO, Type.MULTIPLE_CHOICE);
+    }
+
     private void validateSingleChoiceOptions(NewTaskDTO newTaskDTO) {
         List<Option> options = newTaskDTO.getOptions();
 
@@ -47,29 +55,54 @@ public class TaskService {
             throw new ValidationException("options|Deve ter entre 2 e 5 alternativas");
         }
 
-        int countTrue = 0;
+        int correctCount = validateOptions(newTaskDTO);
+
+        if (correctCount != 1){
+            throw new ValidationException("options|Deve conter apenas uma alternativa correta");
+        }
+    }
+
+    private void validateMultipleChoiceOptions(NewTaskDTO newTaskDTO) {
+        List<Option> options = newTaskDTO.getOptions();
+
+        if (options.size() < 3 || options.size() > 5){
+            throw new ValidationException("options|Deve ter entre 3 e 5 alternativas");
+        }
+
+        int correctCount = validateOptions(newTaskDTO);
+        int incorrectCount = options.size() - correctCount;
+
+        if (correctCount < 2){
+            throw new ValidationException("options|Deve conter pelo menos duas alternativas corretas.");
+        }
+
+        if (incorrectCount < 1){
+            throw new ValidationException("options|Deve conter pelo menos uma alternativa incorreta.");
+        }
+    }
+
+    private int validateOptions(NewTaskDTO newTaskDTO) {
         Set<String> uniqueTitles = new HashSet<>();
+        int correctCount = 0;
 
-        for(Option option : options){
-            String title = option.getOption().trim().toLowerCase();
+        for(Option option : newTaskDTO.getOptions()){
+            String title = option.getOption().trim();
+            String lowerCaseTitle = title.toLowerCase();
 
-            if(option.getOption().equals(newTaskDTO.getStatement())){
+            if(title.equals(newTaskDTO.getStatement())){
                 throw new ValidationException("option|A alternativa não pode ter o mesmo título do enunciado");
             }
 
-            if (uniqueTitles.contains(title)){
+            if (uniqueTitles.contains(lowerCaseTitle)){
                 throw new ValidationException("options|As alternativas não podem possuir o mesmo título");
             }
-            uniqueTitles.add(title);
+            uniqueTitles.add(lowerCaseTitle);
 
             if (option.getIsCorrect()){
-                countTrue ++;
+                correctCount ++;
             }
         }
-
-        if (countTrue != 1){
-            throw new ValidationException("options|Deve conter apenas uma alternativa correta");
-        }
+        return correctCount;
     }
 
     private Task saveTask(NewTaskDTO newTaskDTO, Type type){
