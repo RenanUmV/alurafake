@@ -75,4 +75,12 @@ public class Task {
         this.options.add(option);
         option.setTask(this);
     }
+
+    public Integer getOrder() {
+        return order;
+    }
+
+    public void setOrder(Integer order) {
+        this.order = order;
+    }
 }
