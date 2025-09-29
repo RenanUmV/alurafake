@@ -110,6 +110,8 @@ public class TaskService {
         Course course = courseRepository.findById(newTaskDTO.getCourseId())
                 .orElseThrow(()-> new ValidationException("courseId|Não foi encontrado curso com este ID"));
 
+        validateOrderContinuity(course, newTaskDTO.getOrder());
+
         this.incrementExistingOrders(course, newTaskDTO.getOrder());
 
         Task newTask = newTaskDTO.toModel(type, course);
@@ -126,7 +128,6 @@ public class TaskService {
     }
 
     private void incrementExistingOrders(Course course, Integer order){
-        // Lógica de ordenação (já estava correta)
         List<Task> tasksToUpdate = taskRepository.findByCourseAndOrderGreaterThanEqualOrderByOrderAsc(course, order);
 
         if(!tasksToUpdate.isEmpty()){
@@ -136,4 +137,27 @@ public class TaskService {
         }
         taskRepository.saveAll(tasksToUpdate);
     }
+
+    private void validateOrderContinuity(Course course, Integer desiredOrder) {
+        Integer maxOrder = taskRepository.findMaxOrderForCourse(course.getId());
+
+        if (maxOrder == null) {
+            if (desiredOrder != 1) {
+                throw new ValidationException(
+                        "order|A primeira atividade deve ter ordem 1, mas foi solicitada a ordem " + desiredOrder
+                );
+            }
+            return;
+        }
+
+        Integer nextExpectedOrder = maxOrder + 1;
+
+        if (desiredOrder > nextExpectedOrder) {
+            throw new ValidationException(
+                    "order|Sequência de ordem inválida. A próxima ordem esperada é " + nextExpectedOrder +
+                            ", mas foi solicitada a ordem " + desiredOrder
+            );
+        }
+    }
+
 }
