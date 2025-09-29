@@ -2,6 +2,7 @@ package br.com.alura.AluraFake.option;
 
 import br.com.alura.AluraFake.task.Task;
 import jakarta.persistence.*;
+import org.hibernate.validator.constraints.Length;
 
 @Entity
 @Table(name = "options_table")
@@ -12,6 +13,7 @@ public class Option {
     private Long id;
 
     @Column(name = "option_text")
+    @Length(min = 4, max = 80)
     private String option;
     private boolean isCorrect;
 
@@ -44,7 +46,7 @@ public class Option {
         this.option = option;
     }
 
-    public boolean isCorrect() {
+    public boolean getIsCorrect() {
         return isCorrect;
     }
 
