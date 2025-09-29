@@ -40,6 +40,12 @@ public class TaskController {
                     .body(new ErrorItemDTO("courseId", "Não foi encontrado curso com este ID"));
         }
 
+        if (taskRepository.existsByOrderAndCourse(newTask.getOrder(), course.get())){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorItemDTO("order", "Já existe uma Atividade registrada neste curso " +
+                            "com esta ordem"));
+        }
+
         Task task = newTask.toModel(Type.OPEN_TEXT, course.get());
 
         taskRepository.save(task);
