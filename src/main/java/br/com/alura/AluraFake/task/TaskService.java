@@ -16,14 +16,14 @@ public class TaskService {
     @Autowired
     private TaskRepository taskRepository;
 
-    public Task createTask(NewTaskDTO newTaskDTO){
+    public Task createTask(NewTaskDTO newTaskDTO, Type type){
 
         Course course = courseRepository.findById(newTaskDTO.getCourseId())
                 .orElseThrow(()-> new IllegalArgumentException("Curso não encontrado com o ID: " + newTaskDTO.getCourseId()));
 
         this.incrementExistingOrders(course, newTaskDTO.getOrder());
 
-        Task newTask = newTaskDTO.toModel(Type.OPEN_TEXT, course);
+        Task newTask = newTaskDTO.toModel(type, course);
 
         course.addTask(newTask);
 

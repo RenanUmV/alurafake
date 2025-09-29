@@ -31,19 +31,9 @@ public class TaskController {
     @Transactional
     @PostMapping("/task/new/opentext")
     public ResponseEntity newOpenTextExercise(@Valid @RequestBody NewTaskDTO newTask) {
-        if (taskRepository.existsByStatement(newTask.getStatement())){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ErrorItemDTO("statement", "Ja existe uma atividade com este titulo "));
-        }
+        _validate(newTask);
 
-        Optional<Course> course = courseRepository.findById(newTask.getCourseId());
-
-        if(course.isEmpty()){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ErrorItemDTO("courseId", "Não foi encontrado curso com este ID"));
-        }
-
-        taskService.createTask(newTask);
+        taskService.createTask(newTask, Type.OPEN_TEXT);
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
@@ -56,6 +46,21 @@ public class TaskController {
     @PostMapping("/task/new/multiplechoice")
     public ResponseEntity newMultipleChoice() {
         return ResponseEntity.ok().build();
+    }
+
+    private ResponseEntity<ErrorItemDTO> _validate(NewTaskDTO newTask) {
+        if (taskRepository.existsByStatement(newTask.getStatement())){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorItemDTO("statement", "Ja existe uma atividade com este titulo "));
+        }
+
+        Optional<Course> course = courseRepository.findById(newTask.getCourseId());
+
+        if(course.isEmpty()){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorItemDTO("courseId", "Não foi encontrado curso com este ID"));
+        }
+        return null;
     }
 
 }
