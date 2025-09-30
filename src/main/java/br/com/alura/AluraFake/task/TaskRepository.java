@@ -18,4 +18,10 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     @Query("SELECT MAX(t.order) FROM Task t WHERE t.course.id = :courseId")
     Integer findMaxOrderForCourse(@Param("courseId")Long courseId);
 
+    @Query("SELECT t.type, COUNT(t) FROM Task t WHERE t.course.id = :courseId GROUP BY t.type")
+    List<Object[]> countTasksByTypeForCourse(Long courseId);
+
+    @Query("SELECT t.order FROM Task t WHERE t.course.id = :courseId ORDER BY t.order ASC")
+    List<Integer> findAllOrdersByCourseId(Long courseId);
+
 }

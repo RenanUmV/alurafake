@@ -15,11 +15,13 @@ public class CourseController {
 
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
+    private final CourseService courseService;
 
     @Autowired
-    public CourseController(CourseRepository courseRepository, UserRepository userRepository){
+    public CourseController(CourseRepository courseRepository, UserRepository userRepository, CourseService courseService){
         this.courseRepository = courseRepository;
         this.userRepository = userRepository;
+        this.courseService = courseService;
     }
 
     @Transactional
@@ -52,6 +54,8 @@ public class CourseController {
 
     @PostMapping("/course/{id}/publish")
     public ResponseEntity createCourse(@PathVariable("id") Long id) {
+
+        courseService.publishCourse(id);
         return ResponseEntity.ok().build();
     }
 
