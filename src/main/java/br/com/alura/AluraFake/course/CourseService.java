@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -34,7 +35,7 @@ public class CourseService {
                 .orElseThrow(() -> new ValidationException("course| Curso não encontrado com o ID:" + courseId));
 
         if (!course.getStatus().equals(Status.BUILDING)){
-            throw new ValidationException("status|O Curso só pode ser publicado se seu status for BUILING." +
+            throw new ValidationException("status|O Curso só pode ser publicado se seu status for BUILDING." +
                     " Status atual: " + course.getStatus());
         }
 
@@ -43,6 +44,7 @@ public class CourseService {
         validateTaskTypeCoverage(courseId);
 
         course.setStatus(Status.PUBLISHED);
+        course.setPublishedAt(LocalDateTime.now());
 
         return courseRepository.save(course);
     }
@@ -50,7 +52,7 @@ public class CourseService {
     public UserInstructorCourseReportDTO generateInstructorReport(Long instructorId){
 
         User instructor = userRepository.findById(instructorId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Usuario nao encontrado: "
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario nao encontrado: "
                         + instructorId));
 
         if(!instructor.isInstructor()){

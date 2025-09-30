@@ -69,6 +69,10 @@ public class Course {
         return publishedAt;
     }
 
+    public void setPublishedAt(LocalDateTime publishedAt) {
+        this.publishedAt = publishedAt;
+    }
+
     public void addTask(Task task){
         this.tasks.add(task);
         task.setCourse(this);
