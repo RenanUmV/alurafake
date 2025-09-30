@@ -59,4 +59,13 @@ public class CourseController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/instructor/{id}/courses")
+    public ResponseEntity<UserInstructorCourseReportDTO> getInstructorCoursesReport(@PathVariable("id") Long instructorId){
+        UserInstructorCourseReportDTO report = courseService.generateInstructorReport(instructorId);
+
+        return ResponseEntity.ok(report);
+    }
+
+
+
 }

@@ -2,10 +2,15 @@ package br.com.alura.AluraFake.course;
 
 import br.com.alura.AluraFake.task.TaskRepository;
 import br.com.alura.AluraFake.task.Type;
+import br.com.alura.AluraFake.user.User;
+import br.com.alura.AluraFake.user.UserInstructorCourseReportDTO;
+import br.com.alura.AluraFake.user.UserRepository;
 import jakarta.transaction.Transactional;
 import jakarta.validation.ValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
@@ -19,6 +24,9 @@ public class CourseService {
 
     @Autowired
     private TaskRepository taskRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Transactional
     public Course publishCourse(Long courseId){
@@ -37,6 +45,39 @@ public class CourseService {
         course.setStatus(Status.PUBLISHED);
 
         return courseRepository.save(course);
+    }
+
+    public UserInstructorCourseReportDTO generateInstructorReport(Long instructorId){
+
+        User instructor = userRepository.findById(instructorId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Usuario nao encontrado: "
+                        + instructorId));
+
+        if(!instructor.isInstructor()){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Usuario de ID: " + instructorId + "nao é um" +
+                    " instrutor");
+        }
+
+        List<Course> courses = courseRepository.findByAuthor(instructor);
+
+        Map<Long, Integer> taskCounts = taskRepository.countTasksByCourseForInstructor(instructorId).stream()
+                .collect(Collectors.toMap(
+                        arr -> (Long) arr[0],
+                        arr -> ((Long) arr[1]).intValue()
+                ));
+
+        List<CourseReportItemDTO> reportItems = courses.stream().map(
+                course -> new CourseReportItemDTO(
+                        course,
+                        taskCounts.getOrDefault(course.getId(), 0)
+                ))
+                .toList();
+
+        long totalPublished = courses.stream()
+                .filter(course -> course.getStatus().equals(Status.PUBLISHED))
+                .count();
+
+        return new UserInstructorCourseReportDTO(instructor.getName(), totalPublished, reportItems);
     }
 
     private void validateTaskTypeCoverage(Long courseId){

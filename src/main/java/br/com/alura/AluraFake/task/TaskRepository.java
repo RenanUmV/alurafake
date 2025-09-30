@@ -24,4 +24,7 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     @Query("SELECT t.order FROM Task t WHERE t.course.id = :courseId ORDER BY t.order ASC")
     List<Integer> findAllOrdersByCourseId(Long courseId);
 
+    @Query("SELECT t.course.id, COUNT(t) FROM Task t WHERE t.course.author.id = :instructorId GROUP BY t.course.id")
+    List<Object[]> countTasksByCourseForInstructor(Long instructorId);
+
 }
